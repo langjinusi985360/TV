@@ -3,6 +3,7 @@ package com.fongmi.android.tv.api.config;
 import android.text.TextUtils;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.BuildConfig;
 import com.fongmi.android.tv.api.Decoder;
 import com.fongmi.android.tv.api.loader.BaseLoader;
 import com.fongmi.android.tv.bean.Config;
@@ -70,7 +71,9 @@ public class VodConfig extends BaseConfig {
     }
 
     public VodConfig init() {
-        return config(Config.vod());
+        Config config = Config.vod();
+        if (config.isEmpty()) config = Config.find(BuildConfig.DEFAULT_VOD_URL, 0);
+        return config(config);
     }
 
     public VodConfig config(Config config) {
