@@ -32,7 +32,9 @@ jobs:
           EOF
 
       - name: Build mobile and leanback release APKs
-        run: ./gradlew :app:assembleMobileRelease :app:assembleLeanbackRelease --no-daemon --stacktrace
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleMobileRelease :app:assembleLeanbackRelease --no-daemon --stacktrace
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
