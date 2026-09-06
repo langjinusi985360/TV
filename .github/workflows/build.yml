@@ -1,0 +1,53 @@
+name: Build Mama APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [mama]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Restore keystore and signing config
+        env:
+          MAMA_STORE_B64: ${{ secrets.MAMA_STORE_B64 }}
+          MAMA_STORE_PASS: ${{ secrets.MAMA_STORE_PASS }}
+        run: |
+          echo "$MAMA_STORE_B64" | base64 -d > "$GITHUB_WORKSPACE/mama.jks"
+          cat > "$GITHUB_WORKSPACE/local.properties" <<EOF
+          storeFile=../mama.jks
+          keyAlias=mama
+          storePassword=${MAMA_STORE_PASS}
+          keyPassword=${MAMA_STORE_PASS}
+          EOF
+
+      - name: Build mobile and leanback release APKs
+        run: ./gradlew :app:assembleMobileRelease :app:assembleLeanbackRelease --no-daemon --stacktrace
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mama-apks
+          path: app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+
+      - name: Publish APKs to dist branch
+        run: |
+          git config user.name "mama-bot"
+          git config user.email "mama-bot@users.noreply.github.com"
+          git checkout --orphan dist-tmp
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          find app/build/outputs/apk -name "*.apk" -exec cp {} ./ \;
+          git add -f *.apk
+          git commit -m "APKs build ${{ github.run_number }}"
+          git push -f origin dist-tmp:dist
