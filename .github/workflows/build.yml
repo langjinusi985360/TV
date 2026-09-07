@@ -18,6 +18,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Python 3.10 (Chaquopy buildPython)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
       - name: Restore keystore and signing config
         env:
           MAMA_STORE_B64: ${{ secrets.MAMA_STORE_B64 }}
@@ -34,6 +39,8 @@ jobs:
       - name: Build mobile and leanback release APKs
         run: |
           chmod +x gradlew
+          python --version
+          which python3.10 python3 python || true
           ./gradlew :app:assembleMobileRelease :app:assembleLeanbackRelease --no-daemon --stacktrace
 
       - name: Upload APK artifacts
