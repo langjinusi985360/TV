@@ -15,6 +15,19 @@
 -dontwarn javax.**
 -dontwarn okio.**
 
+-dontwarn androidx.media3.exoplayer.libass.**
+-dontwarn androidx.media3.ui.libass.**
+-dontwarn androidx.media3.decoder.av1.**
+-dontwarn androidx.media3.decoder.vp9.**
+-dontwarn androidx.media3.decoder.opus.**
+-dontwarn androidx.media3.decoder.flac.**
+-dontwarn androidx.media3.decoder.iamf.**
+-dontwarn androidx.media3.decoder.mpegh.**
+-dontwarn androidx.media3.decoder.midi.**
+-dontwarn androidx.media3.datasource.rtmp.**
+-dontwarn androidx.media3.transformer.**
+-dontwarn is.xyz.mpv.**
+
 -keep class org.xmlpull.** { *; }
 -keepclassmembers class org.xmlpull.** { *; }
 

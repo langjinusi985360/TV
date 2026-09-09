@@ -10,6 +10,8 @@ rootProject.file('local.properties').withInputStream {
     localProps.load(it)
 }
 
+def media3Version = "1.11.0"
+
 android {
     namespace = 'com.fongmi.android.tv'
 
@@ -77,6 +79,12 @@ android {
         disable 'ExpiredTargetSdkVersion'
     }
 
+    packaging {
+        jniLibs {
+            pickFirsts += ['lib/**/libc++_shared.so']
+        }
+    }
+
     compileOptions {
         coreLibraryDesugaringEnabled = true
         sourceCompatibility JavaVersion.VERSION_21
@@ -88,6 +96,24 @@ AbiApkPackaging.configure(project, SingleArtifact.APK.INSTANCE)
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.aar"])
+    implementation "androidx.media3:media3-common:$media3Version"
+    implementation "androidx.media3:media3-container:$media3Version"
+    implementation "androidx.media3:media3-database:$media3Version"
+    implementation "androidx.media3:media3-datasource:$media3Version"
+    implementation "androidx.media3:media3-datasource-okhttp:$media3Version"
+    implementation "androidx.media3:media3-decoder:$media3Version"
+    implementation "androidx.media3:media3-decoder-ffmpeg:$media3Version"
+    implementation "androidx.media3:media3-effect:$media3Version"
+    implementation "androidx.media3:media3-exoplayer:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-dash:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-rtsp:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-smoothstreaming:$media3Version"
+    implementation "androidx.media3:media3-extractor:$media3Version"
+    implementation "androidx.media3:media3-mpvplayer:$media3Version"
+    implementation "androidx.media3:media3-session:$media3Version"
+    implementation "androidx.media3:media3-ui:$media3Version"
+    implementation "androidx.media3:media3-ui-danmaku:$media3Version"
     implementation project(':catvod')
     implementation project(':chaquo')
     implementation project(':quickjs')
