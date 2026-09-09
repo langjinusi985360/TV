@@ -69,7 +69,11 @@ jobs:
           cd media3-src
           chmod +x gradlew
           sed -i 's#gradle-9.1.0-all.zip#gradle-9.1.0-bin.zip#' gradle/wrapper/gradle-wrapper.properties
-          sed -i '/ndkVersion = nativeDependencies/d' libraries/decoder_ffmpeg/build.gradle.kts
+          ndkVersion=$(sed -n 's/^android.ndk.version=//p' libraries/decoder_ffmpeg/src/main/resources/META-INF/androidx.media3.decoder.ffmpeg/native-dependencies.properties)
+          echo "decoder_ffmpeg requires NDK $ndkVersion"
+          if [ -n "$ndkVersion" ] && [ ! -d "$ANDROID_HOME/ndk/$ndkVersion" ]; then
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$ndkVersion"
+          fi
           sed -i 's#^plugins { id("media3.android-library") }$#plugins {\n  id("media3.android-library")\n  id("media3.publish")\n}#' libraries/decoder_ffmpeg/build.gradle.kts
           grep -n 'id("media3.publish")' libraries/decoder_ffmpeg/build.gradle.kts
           sed -i 's/withSourcesJar()//' build-logic/src/main/kotlin/media3.publish.gradle.kts
