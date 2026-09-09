@@ -50,8 +50,19 @@ jobs:
           path: media3-repo
           key: media3-repo-${{ steps.media3.outputs.sha }}-${{ env.MEDIA3_VERSION }}-v1
 
+      - name: Verify cached media3 artifacts
+        id: media3-verify
+        run: |
+          set -euo pipefail
+          if [ -f media3-repo/.complete ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            rm -rf media3-repo
+          fi
+
       - name: Publish media3 modules from FongMi fork
-        if: steps.media3-cache.outputs.cache-hit != 'true'
+        if: steps.media3-verify.outputs.ok != 'true'
         run: |
           set -euo pipefail
           git clone --depth=1 --branch "$MEDIA3_BRANCH" https://github.com/FongMi/media media3-src
@@ -59,6 +70,8 @@ jobs:
           chmod +x gradlew
           sed -i 's#gradle-9.1.0-all.zip#gradle-9.1.0-bin.zip#' gradle/wrapper/gradle-wrapper.properties
           sed -i '/ndkVersion = nativeDependencies/d' libraries/decoder_ffmpeg/build.gradle.kts
+          sed -i 's#^plugins { id("media3.android-library") }$#plugins {\n  id("media3.android-library")\n  id("media3.publish")\n}#' libraries/decoder_ffmpeg/build.gradle.kts
+          grep -n 'id("media3.publish")' libraries/decoder_ffmpeg/build.gradle.kts
           sed -i 's/withSourcesJar()//' build-logic/src/main/kotlin/media3.publish.gradle.kts
           python3 - <<'PY'
           import re
@@ -81,20 +94,17 @@ jobs:
           done
           echo "publishing:$tasks"
           ./gradlew --no-daemon --parallel --stacktrace -PmavenRepo="$GITHUB_WORKSPACE/media3-repo" $tasks
-          expected="$GITHUB_WORKSPACE/media3-repo/androidx/media3/media3-exoplayer/$MEDIA3_VERSION/media3-exoplayer-$MEDIA3_VERSION.aar"
-          test -f "$expected"
+          for module in $MEDIA3_MODULES; do
+            artifact="$GITHUB_WORKSPACE/media3-repo/androidx/media3/media3-$module/$MEDIA3_VERSION/media3-$module-$MEDIA3_VERSION.aar"
+            test -f "$artifact" || { echo "missing artifact: media3-$module" >&2; exit 1; }
+          done
+          touch "$GITHUB_WORKSPACE/media3-repo/.complete"
           du -sh "$GITHUB_WORKSPACE/media3-repo"
 
       - name: List published media3 artifacts
         run: |
           set -euo pipefail
           find media3-repo -name "*.aar" | sort
-          for module in $MEDIA3_MODULES; do
-            test -f "media3-repo/androidx/media3/media3-$module/$MEDIA3_VERSION/media3-$module-$MEDIA3_VERSION.aar" || {
-              echo "missing artifact: media3-$module" >&2
-              exit 1
-            }
-          done
 
       - name: Restore keystore and signing config
         env:
@@ -115,7 +125,7 @@ jobs:
           chmod +x gradlew
           python --version
           ./gradlew :app:assembleMobileRelease :app:assembleLeanbackRelease --no-daemon --stacktrace
-          find app/build/outputs/apk Release -name "*.apk" 2>/dev/null | sort
+          find app/build/outputs/apk Release -name "*.apk" 2>/dev/null | sort || true
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
@@ -132,8 +142,9 @@ jobs:
           git config user.name "mama-bot"
           git config user.email "mama-bot@users.noreply.github.com"
           mkdir -p dist-apk
-          find app/build/outputs/apk Release -name "*.apk" 2>/dev/null -exec cp -f {} dist-apk/ \;
+          find app/build/outputs/apk Release -name "*.apk" 2>/dev/null -exec cp -f {} dist-apk/ \; || true
           ls -la dist-apk
+          test -n "$(ls -A dist-apk)"
           git checkout --orphan dist-tmp
           git rm -rf --cached . >/dev/null 2>&1 || true
           cp -f dist-apk/*.apk ./
