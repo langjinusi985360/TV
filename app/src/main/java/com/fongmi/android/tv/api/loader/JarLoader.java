@@ -25,6 +25,8 @@ import dalvik.system.DexClassLoader;
 
 public class JarLoader {
 
+    private static final long MAX_JAR_BYTES = 64L * 1024 * 1024;
+
     private final ConcurrentHashMap<String, DexClassLoader> loaders;
     private final ConcurrentHashMap<String, Method> methods;
     private final ConcurrentHashMap<String, Spider> spiders;
@@ -94,7 +96,13 @@ public class JarLoader {
             if (!md5.isEmpty() && Crypto.equals(Path.jar(jar), md5)) {
                 load(key, Path.jar(jar));
             } else if (jar.startsWith("http")) {
-                load(key, Download.create(jar, Path.jar(jar)).get());
+                if (jar.startsWith("http://") && md5.isEmpty()) return;
+                File downloaded = Download.create(jar, Path.jar(jar)).maxBytes(MAX_JAR_BYTES).get();
+                if (!md5.isEmpty() && !Crypto.equals(downloaded, md5)) {
+                    Path.clear(downloaded);
+                    return;
+                }
+                load(key, downloaded);
             } else if (jar.startsWith("file")) {
                 load(key, Path.local(jar));
             }

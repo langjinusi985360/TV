@@ -25,7 +25,7 @@ def writeFile(path, content):
 
 
 def redirect(url):
-    rsp = requests.get(url, allow_redirects=False, verify=False)
+    rsp = requests.get(url, allow_redirects=False, verify=True)
     if 'Location' in rsp.headers:
         return redirect(rsp.headers['Location'])
     else:

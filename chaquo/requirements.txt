@@ -1,7 +1,9 @@
-lxml
-ujson
-pyquery
-requests
-cachetools
-pycryptodome
-beautifulsoup4
+# Chaquopy 17.0.0's pypi-13.1 index currently publishes these cp310 Android wheels.
+# lxml 5.3.0 and ujson 5.11.0 have known advisories; upgrade when newer wheels are available.
+lxml==5.3.0
+ujson==5.11.0
+pyquery==2.1.0
+requests==2.34.2
+cachetools==7.1.8
+pycryptodome==3.21.0
+beautifulsoup4==4.15.0

@@ -84,7 +84,11 @@ public class CustomWebView extends WebView implements DialogInterface.OnDismissL
         setting.setUserAgentString(Setting.getUa());
         setting.setMediaPlaybackRequiresUserGesture(false);
         setting.setJavaScriptCanOpenWindowsAutomatically(false);
-        setting.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        setting.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        setting.setAllowFileAccess(false);
+        setting.setAllowContentAccess(false);
+        setting.setAllowFileAccessFromFileURLs(false);
+        setting.setAllowUniversalAccessFromFileURLs(false);
         setWebViewClient(webViewClient());
     }
 
@@ -136,9 +140,8 @@ public class CustomWebView extends WebView implements DialogInterface.OnDismissL
             }
 
             @Override
-            @SuppressLint("WebViewClientOnReceivedSslError")
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                handler.proceed();
+                handler.cancel();
             }
 
             @Override

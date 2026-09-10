@@ -103,7 +103,8 @@ class Spider(metaclass=ABCMeta):
         return rsp
 
     def html(self, content):
-        return etree.HTML(content)
+        parser = etree.HTMLParser(resolve_entities=False, no_network=True)
+        return etree.HTML(content, parser=parser)
 
     def str2json(str):
         return json.loads(str)

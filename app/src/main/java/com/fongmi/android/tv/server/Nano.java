@@ -23,6 +23,7 @@ import fi.iki.elonen.NanoHTTPD;
 public class Nano extends NanoHTTPD {
 
     private static final String INDEX = "index.html";
+    private static final String[] PRIVATE_PATHS = {"/action", "/cache", "/file", "/image", "/media", "/newFolder", "/upload", "/delFolder", "/delFile", "/parse", "/proxy"};
 
     private List<Process> process;
 
@@ -61,12 +62,25 @@ public class Nano extends NanoHTTPD {
     @Override
     public Response serve(IHTTPSession session) {
         String url = session.getUri().trim();
+        if (!isLoopback(session) && isPrivatePath(url)) return error(Response.Status.FORBIDDEN, "Forbidden");
         Map<String, String> files = new HashMap<>();
         if (session.getMethod() == Method.POST) parse(session, files);
         if (url.startsWith("/tvbus")) return ok(LiveConfig.getResp());
         if (url.startsWith("/device")) return ok(Device.get().toString());
         for (Process process : process) if (process.isRequest(session, url)) return process.doResponse(session, url, files);
         return getAssets(url.substring(1));
+    }
+
+    private static boolean isPrivatePath(String url) {
+        for (String path : PRIVATE_PATHS) {
+            if (url.equals(path) || url.startsWith(path + "/") || url.startsWith(path + "?")) return true;
+        }
+        return false;
+    }
+
+    private static boolean isLoopback(IHTTPSession session) {
+        String address = session.getRemoteIpAddress();
+        return address != null && (address.startsWith("127.") || address.equals("::1") || address.equals("0:0:0:0:0:0:0:1"));
     }
 
     private void parse(IHTTPSession session, Map<String, String> files) {
