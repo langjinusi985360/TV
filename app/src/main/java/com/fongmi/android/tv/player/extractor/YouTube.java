@@ -43,7 +43,6 @@ import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -247,8 +246,14 @@ public class YouTube implements Source.Extractor {
 
     private String documentToXml(Document doc) throws Exception {
         TransformerFactory factory = TransformerFactory.newInstance();
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+        try {
+            factory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalDTD", "");
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            factory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalStylesheet", "");
+        } catch (IllegalArgumentException ignored) {
+        }
         Transformer transformer = factory.newTransformer();
         transformer.setOutputProperty(OutputKeys.VERSION, "1.0");
         transformer.setOutputProperty(OutputKeys.ENCODING, StandardCharsets.UTF_8.name());
