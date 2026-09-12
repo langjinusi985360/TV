@@ -56,7 +56,6 @@
     <string-array name="select_background">
         <item>關</item>
         <item>開</item>
-        <item>子母畫面</item>
     </string-array>
 
 </resources>
