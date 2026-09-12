@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 public class VodConfig extends BaseConfig {
 
     private static final String TAG = VodConfig.class.getSimpleName();
+    private static final String LEGACY_DEFAULT_VOD_URL = "https://cdn.jsdelivr.net/gh/langjinusi985360/mama-tv-config@main/tvbox.json";
 
     private Site home;
     private String wall;
@@ -72,6 +73,10 @@ public class VodConfig extends BaseConfig {
 
     public VodConfig init() {
         Config config = Config.vod();
+        if (LEGACY_DEFAULT_VOD_URL.equals(config.getUrl())) {
+            config.setUrl(BuildConfig.DEFAULT_VOD_URL);
+            config.save();
+        }
         if (config.isEmpty()) config = Config.find(BuildConfig.DEFAULT_VOD_URL, 0);
         return config(config);
     }
